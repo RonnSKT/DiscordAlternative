@@ -9,7 +9,7 @@
         font-family: Arial, sans-serif;
         margin: 0;
         padding: 0;
-        background-color: #121212; /* Modo Noturno */
+        background-color: #36393f; /* Modo Noturno */
         color: #fff; /* Cor do texto no modo noturno */
         display: flex;
         justify-content: center; /* Centralizar */
@@ -19,19 +19,17 @@
     #chat-container {
         width: 90%;
         max-width: 400px; /* Largura máxima para manter o layout móvel */
-        display: flex;
-        flex-direction: column;
-        background-color: #323232; /* Cor de fundo para o chat */
+        background-color: #2f3136; /* Cor de fundo para o chat */
         border-radius: 10px; /* Borda arredondada */
         padding: 10px;
     }
     #messages-container {
-        flex: 1;
-        overflow-y: scroll;
+        overflow-y: auto;
+        max-height: 60vh; /* Altura máxima para rolagem */
         padding: 10px;
     }
     .message {
-        background-color: #444; /* Cor de fundo para as mensagens */
+        background-color: #40444b; /* Cor de fundo para as mensagens */
         border-radius: 10px; /* Borda arredondada */
         padding: 10px;
         margin-bottom: 10px; /* Espaço entre as mensagens */
@@ -44,27 +42,55 @@
     }
     #input-container {
         display: flex;
+        flex-direction: column;
         padding: 10px;
-        background-color: #323232; /* Cor de fundo para o campo de entrada */
+        background-color: #2f3136; /* Cor de fundo para o campo de entrada */
         border-radius: 20px; /* Borda arredondada */
         margin-top: 10px; /* Espaço entre a caixa de mensagens e a entrada */
     }
     #input-message {
-        flex: 1;
         border: none;
         background-color: transparent; /* Remover cor de fundo padrão */
         color: #fff; /* Cor do texto no modo noturno */
         padding: 10px;
         outline: none; /* Remover contorno ao focar */
+        resize: none; /* Impedir redimensionamento do textarea */
     }
     .button {
-        background-color: #4CAF50;
+        background-color: #7289da;
         color: white;
         border: none;
         border-radius: 20px;
         padding: 10px 20px;
-        margin-left: 10px;
+        margin-top: 10px;
         cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    .button:hover {
+        background-color: #5f73bc;
+    }
+    .button:active {
+        background-color: #4e5c99;
+    }
+    #progress-bar {
+        width: 100%;
+        height: 10px;
+        background-color: #ccc;
+        border-radius: 5px;
+        margin-top: 10px;
+        overflow: hidden;
+        display: none; /* Esconder a barra de progresso por padrão */
+    }
+    #progress {
+        width: 0;
+        height: 100%;
+        background-color: #7289da;
+    }
+    #config-panel {
+        padding: 10px;
+        background-color: #2f3136; /* Cor de fundo para o painel de configurações */
+        border-radius: 20px; /* Borda arredondada */
+        margin-top: 10px; /* Espaço entre o painel de configurações e a entrada */
     }
     #webhook-container {
         display: flex;
@@ -73,41 +99,74 @@
     }
     #webhook-input {
         flex: 1;
-        margin-right: 10px;
-        padding: 10px;
-        border-radius: 10px;
         border: none;
+        background-color: transparent; /* Remover cor de fundo padrão */
+        color: #fff; /* Cor do texto no modo noturno */
+        padding: 10px;
+        outline: none; /* Remover contorno ao focar */
     }
-    #progress-bar {
-        width: 100%;
-        height: 20px;
-        background-color: #ccc;
-        border-radius: 10px;
-        margin-top: 10px;
-        overflow: hidden;
+    #remove-file-button {
+        background-color: transparent;
+        color: #ff6b6b;
+        border: none;
+        padding: 5px;
+        margin-top: 5px;
+        cursor: pointer;
+        display: none;
     }
-    #progress {
-        width: 0;
-        height: 100%;
-        background-color: #4CAF50;
+    #remove-file-button:hover {
+        color: #ff9f9f;
     }
+    #file-info {
+        color: #bbb;
+        margin-top: 5px;
+    }
+    #file-info img, #file-info audio {
+        max-width: 100%;
+    }
+    /* Webhook input */
+#webhook-input{
+ position:relative;
+ top:5px;
+ background-color:rgba(0,0,0,0.15);
+ border-top-left-radius:10px;
+ border-top-right-radius:10px;
+ border-bottom-left-radius:10px;
+ border-bottom-right-radius:10px;
+ left:-3px;
+}
+
+/* Input message */
+#input-message{
+ background-color:rgba(0,0,0,0.23);
+ border-top-left-radius:15px;
+ border-top-right-radius:15px;
+ border-bottom-left-radius:15px;
+ border-bottom-right-radius:15px;
+}
+
+
 </style>
 </head>
 <body>
 <div id="chat-container">
-    <div id="webhook-container">
-        <input type="text" id="webhook-input" placeholder="Insira o link do webhook...">
-        <button id="update-webhook" class="button">Atualizar Webhook</button>
-    </div>
     <div id="messages-container"></div>
     <div id="input-container">
-        <textarea id="input-message" rows="1" placeholder="Digite uma mensagem..."></textarea>
-        <input type="file" id="file-input" style="display: none;" accept="image/*, audio/*, video/*">
+        <textarea id="input-message" placeholder="Digite uma mensagem..."></textarea>
+        <div id="file-info"></div>
+        <input type="file" id="file-input" style="display: none;" accept="image/*, audio/*, video/*, zip\">
+        <button id="send-file-button" class="button">Enviar arquivo</button>
+        <button id="remove-file-button" class="button" onclick="removeFile()" title="Remover arquivo" style="display: none;">&#10006;</button>
         <button id="send-button" class="button">Enviar</button>
-        <button id="file-button" class="button">Enviar arquivo</button>
     </div>
     <div id="progress-bar">
         <div id="progress"></div>
+    </div>
+    <div id="config-panel">
+        <div id="webhook-container">
+            <input type="text" id="webhook-input" placeholder="Insira o link do webhook...">
+            <button id="update-webhook" class="button">Atualizar Webhook</button>
+        </div>
     </div>
 </div>
 
@@ -117,45 +176,37 @@
         const inputMessage = document.getElementById("input-message");
         const sendButton = document.getElementById("send-button");
         const fileInput = document.getElementById("file-input");
-        const fileButton = document.getElementById("file-button");
-        const updateWebhookButton = document.getElementById("update-webhook");
-        const webhookInput = document.getElementById("webhook-input");
-        const progressBar = document.getElementById("progress");
+        const sendFileButton = document.getElementById("send-file-button");
+        const removeFileButton = document.getElementById("remove-file-button");
+        const fileInfo = document.getElementById("file-info");
+        const progressBar = document.getElementById("progress-bar");
+        const progress = document.getElementById("progress");
         let xhr;
 
         sendButton.addEventListener("click", sendMessage);
         inputMessage.addEventListener("keydown", function(event) {
             if (event.key === "Enter" && !event.shiftKey) {
                 sendMessage();
-            } else if (event.key === "Enter" && event.shiftKey) {
-                inputMessage.rows++;
             }
         });
 
-        fileButton.addEventListener("click", function() {
+        sendFileButton.addEventListener("click", function() {
             fileInput.click();
         });
 
         fileInput.addEventListener("change", function() {
-            sendMessage();
+            const file = fileInput.files[0];
+            showFileInfo(file);
         });
 
-        updateWebhookButton.addEventListener("click", function() {
-            const newWebhook = webhookInput.value.trim();
-            if (newWebhook !== "") {
-                localStorage.setItem("discord_webhook", newWebhook);
-                alert("Webhook atualizado com sucesso!");
-            } else {
-                alert("Por favor, insira um link de webhook válido.");
-            }
-        });
+        removeFileButton.addEventListener("click", removeFile);
 
         function sendMessage() {
             const messageText = inputMessage.value.trim();
             const files = fileInput.files;
-            const webhookUrl = localStorage.getItem("discord_webhook");
+            const webhookUrl = document.getElementById("webhook-input").value.trim();
 
-            if (webhookUrl === null || webhookUrl === "") {
+            if (webhookUrl === "") {
                 alert("Por favor, insira um link de webhook antes de enviar mensagens.");
                 return;
             }
@@ -170,7 +221,7 @@
                 xhr.open("POST", webhookUrl, true);
                 xhr.upload.onprogress = function(event) {
                     const percent = (event.loaded / event.total) * 100;
-                    progressBar.style.width = percent + "%";
+                    progress.style.width = percent + "%";
                 };
                 xhr.onload = function() {
                     if (xhr.status === 200) {
@@ -178,19 +229,23 @@
                     } else {
                         addMessage("Erro ao enviar arquivo", "user");
                     }
+                    progressBar.style.display = "none"; // Esconder a barra de progresso após o envio
                 };
                 const formData = new FormData();
                 formData.append("file", file);
                 xhr.send(formData);
+                progressBar.style.display = "block"; // Mostrar a barra de progresso durante o envio
             } else {
                 addMessage(messageText, "user");
-                sendToDiscord({ text: messageText });
+                sendToDiscord({ text: messageText, webhookUrl: webhookUrl });
             }
 
             inputMessage.value = "";
-            inputMessage.rows = 1; // Restaura o número de linhas
-            fileInput.value = ""; // Limpa o campo de arquivo
-            inputMessage.focus(); // Mantém o foco no campo de entrada
+            fileInput.value = ""; // Limpa o campo de arquivo após o envio
+            fileInfo.innerHTML = ""; // Limpa as informações do arquivo após o envio
+
+            // Ocultar o botão de remover arquivo
+            removeFileButton.style.display = "none";
         }
 
         function addMessage(message, sender) {
@@ -225,12 +280,10 @@
         }
 
         function sendToDiscord(data) {
-            const webhookUrl = localStorage.getItem("discord_webhook");
             const formData = new FormData();
-
             formData.append("content", data.text);
 
-            fetch(webhookUrl, {
+            fetch(data.webhookUrl, {
                 method: "POST",
                 body: formData
             }).then(response => {
@@ -242,11 +295,54 @@
             });
         }
 
+        function showFileInfo(file) {
+            fileInfo.innerHTML = "";
+
+            if (file.type.startsWith("image")) {
+                const image = document.createElement("img");
+                image.src = URL.createObjectURL(file);
+                image.style.maxWidth = "100%";
+                fileInfo.appendChild(image);
+            } else if (file.type.startsWith("audio")) {
+                const audio = document.createElement("audio");
+                audio.controls = true;
+                audio.src = URL.createObjectURL(file);
+                fileInfo.appendChild(audio);
+            } else {
+                const fileName = document.createElement("span");
+                fileName.textContent = "Arquivo selecionado: " + file.name;
+                fileInfo.appendChild(fileName);
+            }
+
+            // Mostrar o botão de remover arquivo
+            removeFileButton.style.display = "inline-block";
+        }
+
+        // Função para remover o arquivo
+        function removeFile() {
+            fileInput.value = ""; // Limpa o campo de arquivo
+            fileInfo.innerHTML = ""; // Limpa as informações do arquivo
+
+            // Ocultar o botão de remover arquivo
+            removeFileButton.style.display = "none";
+        }
+
         // Carrega o webhook armazenado localmente, se existir
         const storedWebhook = localStorage.getItem("discord_webhook");
         if (storedWebhook !== null && storedWebhook !== "") {
-            webhookInput.value = storedWebhook;
+            document.getElementById("webhook-input").value = storedWebhook;
         }
+
+        // Atualiza o webhook ao clicar no botão
+        document.getElementById("update-webhook").addEventListener("click", function() {
+            const newWebhook = document.getElementById("webhook-input").value.trim();
+            if (newWebhook !== "") {
+                localStorage.setItem("discord_webhook", newWebhook);
+                alert("Webhook atualizado com sucesso!");
+            } else {
+                alert("Por favor, insira um link de webhook válido.");
+            }
+        });
     });
 </script>
 </body>
