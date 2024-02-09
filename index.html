@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mobile Chat</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #121212; /* Modo Noturno */
+        color: #fff; /* Cor do texto no modo noturno */
+        display: flex;
+        justify-content: center; /* Centralizar */
+        align-items: center; /* Centralizar */
+        height: 100vh;
+    }
+    #chat-container {
+        width: 90%;
+        max-width: 400px; /* Largura máxima para manter o layout móvel */
+        display: flex;
+        flex-direction: column;
+        background-color: #323232; /* Cor de fundo para o chat */
+        border-radius: 10px; /* Borda arredondada */
+        padding: 10px;
+    }
+    #messages-container {
+        flex: 1;
+        overflow-y: scroll;
+        padding: 10px;
+    }
+    .message {
+        background-color: #444; /* Cor de fundo para as mensagens */
+        border-radius: 10px; /* Borda arredondada */
+        padding: 10px;
+        margin-bottom: 10px; /* Espaço entre as mensagens */
+    }
+    .user {
+        align-self: flex-start;
+    }
+    .discord {
+        align-self: flex-end;
+    }
+    #input-container {
+        display: flex;
+        padding: 10px;
+        background-color: #323232; /* Cor de fundo para o campo de entrada */
+        border-radius: 20px; /* Borda arredondada */
+        margin-top: 10px; /* Espaço entre a caixa de mensagens e a entrada */
+    }
+    #input-message {
+        flex: 1;
+        border: none;
+        background-color: transparent; /* Remover cor de fundo padrão */
+        color: #fff; /* Cor do texto no modo noturno */
+        padding: 10px;
+        outline: none; /* Remover contorno ao focar */
+    }
+    .button {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 10px 20px;
+        margin-left: 10px;
+        cursor: pointer;
+    }
+    #webhook-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    #webhook-input {
+        flex: 1;
+        margin-right: 10px;
+        padding: 10px;
+        border-radius: 10px;
+        border: none;
+    }
+    #progress-bar {
+        width: 100%;
+        height: 20px;
+        background-color: #ccc;
+        border-radius: 10px;
+        margin-top: 10px;
+        overflow: hidden;
+    }
+    #progress {
+        width: 0;
+        height: 100%;
+        background-color: #4CAF50;
+    }
+</style>
+</head>
+<body>
+<div id="chat-container">
+    <div id="webhook-container">
+        <input type="text" id="webhook-input" placeholder="Insira o link do webhook...">
+        <button id="update-webhook" class="button">Atualizar Webhook</button>
+    </div>
+    <div id="messages-container"></div>
+    <div id="input-container">
+        <textarea id="input-message" rows="1" placeholder="Digite uma mensagem..."></textarea>
+        <input type="file" id="file-input" style="display: none;" accept="image/*, audio/*, video/*">
+        <button id="send-button" class="button">Enviar</button>
+        <button id="file-button" class="button">Enviar arquivo</button>
+    </div>
+    <div id="progress-bar">
+        <div id="progress"></div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const messagesContainer = document.getElementById("messages-container");
+        const inputMessage = document.getElementById("input-message");
+        const sendButton = document.getElementById("send-button");
+        const fileInput = document.getElementById("file-input");
+        const fileButton = document.getElementById("file-button");
+        const updateWebhookButton = document.getElementById("update-webhook");
+        const webhookInput = document.getElementById("webhook-input");
+        const progressBar = document.getElementById("progress");
+        let xhr;
+
+        sendButton.addEventListener("click", sendMessage);
+        inputMessage.addEventListener("keydown", function(event) {
+            if (event.key === "Enter" && !event.shiftKey) {
+                sendMessage();
+            } else if (event.key === "Enter" && event.shiftKey) {
+                inputMessage.rows++;
+            }
+        });
+
+        fileButton.addEventListener("click", function() {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener("change", function() {
+            sendMessage();
+        });
+
+        updateWebhookButton.addEventListener("click", function() {
+            const newWebhook = webhookInput.value.trim();
+            if (newWebhook !== "") {
+                localStorage.setItem("discord_webhook", newWebhook);
+                alert("Webhook atualizado com sucesso!");
+            } else {
+                alert("Por favor, insira um link de webhook válido.");
+            }
+        });
+
+        function sendMessage() {
+            const messageText = inputMessage.value.trim();
+            const files = fileInput.files;
+            const webhookUrl = localStorage.getItem("discord_webhook");
+
+            if (webhookUrl === null || webhookUrl === "") {
+                alert("Por favor, insira um link de webhook antes de enviar mensagens.");
+                return;
+            }
+
+            if (messageText === "" && (!files || files.length === 0)) {
+                return; // Não envia mensagem vazia ou sem arquivos
+            }
+
+            if (files && files.length > 0) {
+                const file = files[0];
+                xhr = new XMLHttpRequest();
+                xhr.open("POST", webhookUrl, true);
+                xhr.upload.onprogress = function(event) {
+                    const percent = (event.loaded / event.total) * 100;
+                    progressBar.style.width = percent + "%";
+                };
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        addMessage("Arquivo enviado", "user");
+                    } else {
+                        addMessage("Erro ao enviar arquivo", "user");
+                    }
+                };
+                const formData = new FormData();
+                formData.append("file", file);
+                xhr.send(formData);
+            } else {
+                addMessage(messageText, "user");
+                sendToDiscord({ text: messageText });
+            }
+
+            inputMessage.value = "";
+            inputMessage.rows = 1; // Restaura o número de linhas
+            fileInput.value = ""; // Limpa o campo de arquivo
+            inputMessage.focus(); // Mantém o foco no campo de entrada
+        }
+
+        function addMessage(message, sender) {
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("message");
+            messageDiv.classList.add(sender);
+
+            if (typeof message === "string") {
+                // Se a mensagem for texto, adiciona como texto simples
+                const messageText = document.createElement("span");
+                messageText.textContent = message;
+                messageDiv.appendChild(messageText);
+            } else {
+                // Se a mensagem for um arquivo, cria uma tag <img> para imagens e <audio> para áudio
+                if (message.startsWith("data:image")) {
+                    const image = document.createElement("img");
+                    image.src = message;
+                    image.style.maxWidth = "100%";
+                    messageDiv.appendChild(image);
+                } else if (message.startsWith("data:audio")) {
+                    const audio = document.createElement("audio");
+                    audio.controls = true;
+                    audio.src = message;
+                    messageDiv.appendChild(audio);
+                }
+            }
+
+            messagesContainer.appendChild(messageDiv);
+
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function sendToDiscord(data) {
+            const webhookUrl = localStorage.getItem("discord_webhook");
+            const formData = new FormData();
+
+            formData.append("content", data.text);
+
+            fetch(webhookUrl, {
+                method: "POST",
+                body: formData
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error("Erro ao enviar mensagem para o Discord");
+                }
+            }).catch(error => {
+                console.error("Erro:", error);
+            });
+        }
+
+        // Carrega o webhook armazenado localmente, se existir
+        const storedWebhook = localStorage.getItem("discord_webhook");
+        if (storedWebhook !== null && storedWebhook !== "") {
+            webhookInput.value = storedWebhook;
+        }
+    });
+</script>
+</body>
+</html>
