@@ -4,35 +4,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mobile Chat</title>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
 <style>
     body {
         font-family: Arial, sans-serif;
         margin: 0;
         padding: 0;
-        background-color: #36393f; /* Modo Noturno */
-        color: #fff; /* Cor do texto no modo noturno */
+        background-color: #36393f;
+        color: #fff;
         display: flex;
-        justify-content: center; /* Centralizar */
-        align-items: center; /* Centralizar */
+        justify-content: center;
+        align-items: center;
         height: 100vh;
     }
     #chat-container {
         width: 90%;
-        max-width: 400px; /* Largura máxima para manter o layout móvel */
-        background-color: #2f3136; /* Cor de fundo para o chat */
-        border-radius: 10px; /* Borda arredondada */
+        max-width: 400px;
+        background-color: #2f3136;
+        border-radius: 10px;
         padding: 10px;
     }
     #messages-container {
         overflow-y: auto;
-        max-height: 60vh; /* Altura máxima para rolagem */
+        max-height: 60vh;
         padding: 10px;
     }
     .message {
-        background-color: #40444b; /* Cor de fundo para as mensagens */
-        border-radius: 10px; /* Borda arredondada */
+        background-color: #40444b;
+        border-radius: 10px;
         padding: 10px;
-        margin-bottom: 10px; /* Espaço entre as mensagens */
+        margin-bottom: 10px;
     }
     .user {
         align-self: flex-start;
@@ -44,17 +45,17 @@
         display: flex;
         flex-direction: column;
         padding: 10px;
-        background-color: #2f3136; /* Cor de fundo para o campo de entrada */
-        border-radius: 20px; /* Borda arredondada */
-        margin-top: 10px; /* Espaço entre a caixa de mensagens e a entrada */
+        background-color: #2f3136;
+        border-radius: 20px;
+        margin-top: 10px;
     }
     #input-message {
         border: none;
-        background-color: transparent; /* Remover cor de fundo padrão */
-        color: #fff; /* Cor do texto no modo noturno */
+        background-color: transparent;
+        color: #fff;
         padding: 10px;
-        outline: none; /* Remover contorno ao focar */
-        resize: none; /* Impedir redimensionamento do textarea */
+        outline: none;
+        resize: none;
     }
     .button {
         background-color: #7289da;
@@ -79,7 +80,7 @@
         border-radius: 5px;
         margin-top: 10px;
         overflow: hidden;
-        display: none; /* Esconder a barra de progresso por padrão */
+        display: none;
     }
     #progress {
         width: 0;
@@ -88,9 +89,9 @@
     }
     #config-panel {
         padding: 10px;
-        background-color: #2f3136; /* Cor de fundo para o painel de configurações */
-        border-radius: 20px; /* Borda arredondada */
-        margin-top: 10px; /* Espaço entre o painel de configurações e a entrada */
+        background-color: #2f3136;
+        border-radius: 20px;
+        margin-top: 10px;
     }
     #webhook-container {
         display: flex;
@@ -100,10 +101,10 @@
     #webhook-input {
         flex: 1;
         border: none;
-        background-color: transparent; /* Remover cor de fundo padrão */
-        color: #fff; /* Cor do texto no modo noturno */
+        background-color: transparent;
+        color: #fff;
         padding: 10px;
-        outline: none; /* Remover contorno ao focar */
+        outline: none;
     }
     #remove-file-button {
         background-color: transparent;
@@ -124,52 +125,42 @@
     #file-info img, #file-info audio {
         max-width: 100%;
     }
-    /* Webhook input */
-#webhook-input{
- position:relative;
- top:5px;
- background-color:rgba(0,0,0,0.15);
- border-top-left-radius:10px;
- border-top-right-radius:10px;
- border-bottom-left-radius:10px;
- border-bottom-right-radius:10px;
- left:-3px;
-}
-
-/* Input message */
-#input-message{
- background-color:rgba(0,0,0,0.23);
- border-top-left-radius:15px;
- border-top-right-radius:15px;
- border-bottom-left-radius:15px;
- border-bottom-right-radius:15px;
-}
-
-
+    #webhook-input{
+        position:relative;
+        top:5px;
+        background-color:rgba(0,0,0,0.15);
+        border-radius:10px;
+        left:-3px;
+    }
+    #input-message{
+        background-color:rgba(0,0,0,0.23);
+        border-radius:15px;
+    }
 </style>
 </head>
 <body>
-<div id="chat-container">
-    <div id="messages-container"></div>
-    <div id="input-container">
-        <textarea id="input-message" placeholder="Digite uma mensagem..."></textarea>
+<div id="chat-container" class="container">
+    <div id="messages-container" class="mb-3"></div>
+    <div id="input-container" class="input-group">
+        <textarea id="input-message" class="form-control" placeholder="Digite uma mensagem..."></textarea>
         <div id="file-info"></div>
-        <input type="file" id="file-input" style="display: none;" accept="image/*, audio/*, video/*, zip\">
-        <button id="send-file-button" class="button">Enviar arquivo</button>
-        <button id="remove-file-button" class="button" onclick="removeFile()" title="Remover arquivo" style="display: none;">&#10006;</button>
-        <button id="send-button" class="button">Enviar</button>
+        <input type="file" id="file-input" class="form-control" style="display: none;" accept="image/*, audio/*, video/*, zip">
+        <button id="send-file-button" class="btn btn-primary">Enviar arquivo</button>
+        <button id="remove-file-button" class="btn btn-danger" onclick="removeFile()" title="Remover arquivo" style="display: none;">&#10006;</button>
+        <button id="send-button" class="btn btn-success">Enviar</button>
     </div>
-    <div id="progress-bar">
-        <div id="progress"></div>
+    <div id="progress-bar" class="progress mt-3">
+        <div id="progress" class="progress-bar" role="progressbar"></div>
     </div>
-    <div id="config-panel">
-        <div id="webhook-container">
-            <input type="text" id="webhook-input" placeholder="Insira o link do webhook...">
-            <button id="update-webhook" class="button">Atualizar Webhook</button>
+    <div id="config-panel" class="mt-3 p-3">
+        <div id="webhook-container" class="input-group">
+            <input type="text" id="webhook-input" class="form-control" placeholder="Insira o link do webhook...">
+            <button id="update-webhook" class="btn btn-warning">Atualizar Webhook</button>
         </div>
     </div>
 </div>
 
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const messagesContainer = document.getElementById("messages-container");
